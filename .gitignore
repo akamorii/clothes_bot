@@ -1,2 +1,6 @@
 /venv
 vars.py
+/test
+/__pycache__
+*/__pycache__
+dice_handler.py
