@@ -1,7 +1,7 @@
 import aiosqlite
 import asyncio
 
-DB_PATH = "db/clothes_store.db"
+DB_PATH = "./clothes_store.db"
 
 async def db_start():
     async with aiosqlite.connect(DB_PATH) as con:
@@ -26,9 +26,17 @@ async def db_drop():
         await con.execute("DROP TABLE IF EXISTS clothes")
         await con.commit()
 
+async def db_show(row, table):
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(f"SELECT {row} FROM {table}")
+        rows = await cursor.fetchall()  # Используем await, так как fetchall асинхронен в aiosqlite
+        return rows
+
 async def main():
     await db_start()
-    await add_clothes_db('clothes', 'classic', 't_shirt', 'white')
+    rows = await db_show('collection', 'clothes')
+    print(rows)  # выводим результат работы db_show
+    # await add_clothes_db('clothes', 'anycollection', 't_shirt', 'green')
     # await db_drop()  # Раскомментируйте, если хотите удалить таблицу
 
 if __name__ == "__main__":

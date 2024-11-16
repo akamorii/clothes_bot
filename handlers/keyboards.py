@@ -21,8 +21,8 @@ adkb = [
         [types.KeyboardButton(text="главное меню")]
 ]
 
-main_keyboard = types.ReplyKeyboardMarkup(keyboard=mkb)
+main_keyboard = types.ReplyKeyboardMarkup(keyboard=mkb, input_field_placeholder='выберите пункт в меню', resize_keyboard=True)
 
-main_admin_keyboard = types.ReplyKeyboardMarkup(keyboard=makb)
+main_admin_keyboard = types.ReplyKeyboardMarkup(keyboard=makb, input_field_placeholder='выберите пункт в меню', resize_keyboard=True)
 
-admin_keyboard = types.ReplyKeyboardMarkup(keyboard=adkb)
+admin_keyboard = types.ReplyKeyboardMarkup(keyboard=adkb, input_field_placeholder='выберите пункт в меню', resize_keyboard=True)
