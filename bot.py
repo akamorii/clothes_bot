@@ -11,6 +11,7 @@ from handlers.start_handler import router as start_router
 from handlers.dice_handler import router as dice_router
 from handlers.admin_handler import router as admin_router
 from handlers.any_handler import router as any_router
+from handlers.catalog_handler import router as catalog_router
 # from handlers.dice_handler import router as dice_router
 # from handlers.buttons_handlers import router as btns_router
 
@@ -29,7 +30,7 @@ dp = Dispatcher()
 #     await message.answer("zxc")
 # register_start_handler(dp)
 # dp.include_router(dice_router)
-
+dp.include_router(catalog_router)
 dp.include_router(start_router)
 dp.include_router(dice_router)
 dp.include_router(admin_router)
