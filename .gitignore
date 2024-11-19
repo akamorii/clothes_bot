@@ -4,3 +4,4 @@ vars.py
 /__pycache__
 */__pycache__
 dice_handler.py
+test_payment.py

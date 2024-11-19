@@ -21,6 +21,10 @@ adkb = [
         [types.KeyboardButton(text="главное меню")]
 ]
 
+# confirm_order_inline_kb = [
+#         [types.inline_keyboard_button(text="подтвердить заказ", )]
+# ]
+
 main_keyboard = types.ReplyKeyboardMarkup(keyboard=mkb, input_field_placeholder='выберите пункт в меню', resize_keyboard=True)
 
 main_admin_keyboard = types.ReplyKeyboardMarkup(keyboard=makb, input_field_placeholder='выберите пункт в меню', resize_keyboard=True)
