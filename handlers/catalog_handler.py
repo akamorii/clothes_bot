@@ -15,7 +15,7 @@ import time
 
 import asyncio
 
-from db_bot.database import db_show, select_row_from_db
+from db_bot.database import db_show, select_row_from_db, select_ids_from_db, add_order_to_db, count_update_db
 
 # from yookassa import Payment
 
@@ -38,6 +38,7 @@ confirm_order_inline_kb = [
 @router.message(F.text == "каталог")
 async def handle_catalog(message: types.Message, state: FSMContext):
     await state.set_state(Make_order.collection)
+    
     # Получаем данные из БД асинхронно
     tuple_list = await db_show(['collection'], 'clothes')
     # Извлекаем уникальные элементы из результата
@@ -134,19 +135,32 @@ async def confirm_order_callback(callback: types.CallbackQuery, state: FSMContex
             break
         await asyncio.sleep(10)  # Асинхронная пауза
 
+    it_id = await select_ids_from_db('id', 'clothes', 'color', color, 'collection', collection)
+    
+    sized_it_id = await select_ids_from_db('sized_item_id', 'sizes_and_counts', 'item_id', it_id[0][0], 'size', size)
+    
     await callback.message.answer(
         f"Ваш заказ подтвержден!\n\n"
+        f"item_id: {it_id}\n"
         f"Коллекция: {collection}\n"
         f"Цвет: {color}\n"
         f"Размер: {size}\n"
+        f"sized_item_id: {sized_it_id}\n"
         f"Адрес: {addr}\n"
         f"user_id: {user_id}"
     )
     
+    await add_order_to_db(sized_it_id[0][0], user_id, addr)
+    
+    await count_update_db('-', 1, 1)
+    
+    order_id = await select_row_from_db('orders', 'user_id', user_id)
+    # print(order_id)
+    await callback.message.answer(f"ваш номер заказа {order_id[-1][0]}")
+    
     # Завершаем состояние
     await state.clear()
-    await callback.answer()  # Закрываем всплывающее уведомление Telegram
-
+    # await callback.answer()  # Закрываем всплывающее уведомление Telegram
 
 # Хэндлер для отмены заказа
 @router.callback_query(StateFilter(Make_order.confirm_order), F.data == 'cancel_order')
@@ -157,4 +171,4 @@ async def cancel_order_callback(callback: types.CallbackQuery, state: FSMContext
         await callback.message.answer("Заказ отменен. Возвращаюсь в главное меню.", reply_markup=main_keyboard)
     # Завершаем состояние
     await state.clear()
-    await callback.answer()  # Закрываем всплывающее уведомление Telegram
+    # await callback.answer()  # Закрываем всплывающее уведомление Telegram

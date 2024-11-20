@@ -43,9 +43,39 @@ async def add_clothes_db(table, collection, item_name, color):
         await con.commit()
 
 
+async def add_order_to_db(sized_item, user_id, addr, status='unknown', tracknum='unknown'):
+    async with aiosqlite.connect(DB_PATH) as con:
+        await con.execute(
+            """
+            INSERT INTO orders (sized_item, user_id, addr, status, tracknum)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (sized_item, user_id, addr, status, tracknum),
+        )
+        await con.commit()
+ 
+ 
+async def count_update_db(operation, uptable_count, id):
+    async with aiosqlite.connect(DB_PATH) as con:
+        await con.execute(f"UPDATE sizes_and_counts SET count = count {operation} {uptable_count} WHERE sized_item_id == {id}")
+        await con.commit()
+        
+        
+async def order_update_db(table = 'orders',column = 'status', mean = 'собираем', id_name = 'order_id', id = 1):
+    async with aiosqlite.connect(DB_PATH) as con:
+        await con.execute(f"UPDATE {table} SET {column}='{mean}' WHERE {id_name} == {id}")
+        await con.commit()
+        
+
 async def db_drop(table) -> None:
     async with aiosqlite.connect(DB_PATH) as con:
         await con.execute(f"DROP TABLE IF EXISTS {table}")
+        await con.commit()
+
+
+async def delete_item_from_db(table = 'clothes',collection = None, color = None):
+    async with aiosqlite.connect(DB_PATH) as con:
+        await con.execute(f"DELETE FROM {table} WHERE collection == '{collection}' AND color == '{color}'")
         await con.commit()
 
 
@@ -84,14 +114,35 @@ async def select_row_from_db (table, eq1, eq2, eq3 = 1, eq4 = 1) -> list:
     async with aiosqlite.connect(DB_PATH) as con:
         cursor = await con.execute(query)
         rows = await cursor.fetchall()
-        return (rows[0])
+        return (rows)
+
+
+
+async def select_ids_from_db (id, table, eq1, eq2, eq3 = 1, eq4 = 1) -> list:
+    """
+    получить id двух элементов
+    
+    :param table: Имя таблицы.
+    :param id: имя элемента который мы хотим получить.
+    """
+    query = f"SELECT {id} FROM {table}  WHERE {eq1} == '{eq2}' AND {eq3} == '{eq4}'"
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return (rows)
+    
 
 async def main():
     await db_start()
     # await add_clothes_db('clothes', 'classic', 't_shirt', 'red')
     # rows = await db_show(['collection', 'item'], 'clothes')
-    rows = await select_row_from_db('sizes_and_counts', 'size', '52', 'item_id', '1')
-    print(rows)  # выводим результат работы db_show
+    # rows = await select_row_from_db('sizes_and_counts', 'size', '52', 'item_id', '1')
+    # rows = await select_ids_from_db('id', 'clothes', 'color', 'white', 'collection', 'classic')
+    # rows = await select_row_from_db('orders', 'user_id', 1135754644)
+    await order_update_db()
+    # print(rows)  # выводим результат работы db_show
+    # await count_update_db('-', 1, 1)
     # await db_drop()  # Раскомментируйте, если хотите удалить таблицу
 
 if __name__ == "__main__":

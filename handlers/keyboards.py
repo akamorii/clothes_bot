@@ -16,8 +16,8 @@ makb = [
 
 adkb = [
         [types.KeyboardButton(text="редактировать заказ")],
-        [types.KeyboardButton(text="добавить коллекцию")],
-        [types.KeyboardButton(text="добавить товар")],
+        [types.KeyboardButton(text="действия с товарами")],
+        [types.KeyboardButton(text="дпосмотреть текущие заказы")],
         [types.KeyboardButton(text="главное меню")]
 ]
 
