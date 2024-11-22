@@ -47,6 +47,8 @@ async def handle_catalog(message: types.Message, state: FSMContext):
     catalog_kb = ReplyKeyboardBuilder()
     for el in unique_elements:
         catalog_kb.add(KeyboardButton(text=el))
+        
+    catalog_kb.row(types.KeyboardButton(text="главное меню"))
     # Отправляем сообщение с клавиатурой
     await message.answer(
         "Выберите коллекцию:",
@@ -56,6 +58,10 @@ async def handle_catalog(message: types.Message, state: FSMContext):
 
 @router.message(Make_order.collection)
 async def make_order(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     await state.update_data(collection = message.text)
     await state.set_state(Make_order.color)
     tuple_list = await db_show(['color'], 'clothes')
@@ -66,35 +72,51 @@ async def make_order(message: types.Message, state: FSMContext):
     
     for el in unique_elements:
         catalog_kb2.add(KeyboardButton(text=el))
-        
+    catalog_kb2.row(types.KeyboardButton(text="главное меню"))
+    
     await message.answer('введите цвет', reply_markup=catalog_kb2.as_markup(resize_keyboard=True))
 
 
 @router.message(Make_order.color)
 async def make_order_two(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     await state.update_data(color = message.text)
     await state.set_state(Make_order.size)
     tuple_list = await db_show(['size'], 'sizes_and_counts', eq1='count')
     # Извлекаем уникальные элементы из результата
     unique_elements = list({item[0] for item in tuple_list})
+    unique_elements = sorted(unique_elements)
     # Создаем клавиатуру
     catalog_kb = ReplyKeyboardBuilder()
     for el in unique_elements:
         catalog_kb.add(KeyboardButton(text=str(el)))
+    catalog_kb.row(types.KeyboardButton(text="главное меню"))
         
     await message.answer('размер', reply_markup=catalog_kb.as_markup(resize_keyboard=True))
     
 
 @router.message(Make_order.size)
 async def make_order_three(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     await state.update_data(size = message.text)
     await state.set_state(Make_order.addr)
-    
-    await message.answer("Введите адрес пункта Почты России 🚛 Например: Московская область, улица Пушкина, дом 37")
+    main_menu = ReplyKeyboardBuilder()
+    main_menu.row(types.KeyboardButton(text="главное меню"))
+    await message.answer("Введите адрес пункта Почты России 🚛 Например: Московская область, улица Пушкина, дом 37", reply_markup=main_menu.as_markup())
     
     
 @router.message(Make_order.addr)
 async def make_order_four(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     await state.update_data(addr = [message.text, message.from_user.id])
     
     data = await state.get_data()
@@ -141,14 +163,16 @@ async def confirm_order_callback(callback: types.CallbackQuery, state: FSMContex
     
     await callback.message.answer(
         f"Ваш заказ подтвержден!\n\n"
-        f"item_id: {it_id}\n"
+        # f"item_id: {it_id}\n"
         f"Коллекция: {collection}\n"
         f"Цвет: {color}\n"
         f"Размер: {size}\n"
-        f"sized_item_id: {sized_it_id}\n"
+        # f"sized_item_id: {sized_it_id}\n"
         f"Адрес: {addr}\n"
-        f"user_id: {user_id}"
+        # f"user_id: {user_id}"
     )
+    
+    # TODO
     
     await add_order_to_db(sized_it_id[0][0], user_id, addr)
     

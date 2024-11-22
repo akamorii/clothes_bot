@@ -16,7 +16,7 @@ import time
 
 import asyncio
 
-from db_bot.database import db_show, select_row_from_db, select_ids_from_db, add_order_to_db, count_update_db, order_update_db, add_clothes_db, delete_item_from_db
+from db_bot.database import db_show, select_row_from_db, select_ids_from_db, add_order_to_db, count_update_db, order_update_db, add_clothes_db, delete_item_from_db, select_not_delivered_orders, select_sized_data_from_db, select_item_data_from_db, select_counts_from_db,select_all_from_table
 # Создаем роутер
 
 router = Router()
@@ -34,6 +34,20 @@ class AddItemState(StatesGroup):
     collection = State()
     # item_name = State()
     color = State()
+    
+    
+class CheckOrderState(StatesGroup):
+    show_orders = State()
+    waiting_for_id = State()
+    show_order = State()
+   
+    
+class Update_count_state(StatesGroup):
+    action_uptade_count = State()
+    take_color_state = State()
+    take_size_state = State()
+    input_count = State()
+    
 
 add_action_kb = ReplyKeyboardBuilder()
 
@@ -41,7 +55,7 @@ add_action_kb.row(
     types.KeyboardButton(text="добавить"),
     types.KeyboardButton(text="удалить"),
 )
-add_action_kb.row(types.KeyboardButton(text="Вернуться в главное меню"))
+add_action_kb.row(types.KeyboardButton(text="главное меню"))
 
 # Клавиатура для выбора действия
 edit_order_kb = ReplyKeyboardBuilder()
@@ -49,7 +63,17 @@ edit_order_kb.row(
     types.KeyboardButton(text="Добавить трек-номер"),
     types.KeyboardButton(text="Обновить статус"),
 )
-edit_order_kb.row(types.KeyboardButton(text="Вернуться в главное меню"))
+edit_order_kb.row(types.KeyboardButton(text="главное меню"))
+
+
+edit_count_kb = ReplyKeyboardBuilder()
+
+edit_count_kb.row(types.KeyboardButton(text="количество товара"))
+edit_count_kb.row(
+    types.KeyboardButton(text="добавить количество"),
+    types.KeyboardButton(text="уменьшить количество"),
+)
+edit_count_kb.row(types.KeyboardButton(text="главное меню"))
 
 # Обработчик команды "админ панель"
 # Обработчик команды "админ панель"
@@ -60,11 +84,126 @@ async def admin_panel_show(message: types.Message, state: FSMContext):
         await message.answer("Вы в админ панели. Выберите действие:", reply_markup=admin_keyboard)
 
 
+@router.message(StateFilter(AdminState.admin), F.text == "изменить количество товара")
+async def check_count(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
+    await state.clear()
+    await state.set_state(Update_count_state.action_uptade_count)
+    await message.answer(f"выберите пункт из меню", reply_markup=edit_count_kb.as_markup())
+    
+
+@router.message(StateFilter(Update_count_state.action_uptade_count), F.text == "количество товара")
+async def show_count(message: types.Message, state: FSMContext):
+    # await state.clear()
+    # await state.set_state(Update_count_state.action_uptade_count)
+    sized_items_table = await select_all_from_table("sizes_and_counts")
+    items_table = await select_all_from_table("clothes")
+    count_staff = await select_counts_from_db()
+    
+    response = []
+    for sized_item_id, item_id, quantity in count_staff:
+    # Находим информацию о размере и товаре
+        sized_item = next((x for x in sized_items_table if x[0] == sized_item_id), None)
+        item = next((x for x in items_table if x[0] == item_id), None)
+
+        if sized_item and item:
+            size = sized_item[1]
+            color = item[3]
+            response.append(f"{color} {size} - {quantity}")
+
+# Формирование строки ответа
+    response_message = "\n".join(response)
+    
+    await message.answer(f"{response_message}", reply_markup=edit_count_kb.as_markup())
+
+@router.message(StateFilter(Update_count_state.action_uptade_count), F.text == "добавить количество")
+async def take_action_for_change_count_increase(message: types.Message, state: FSMContext):
+    await state.update_data(action = добавить)
+    await state.set_state(Update_count_state.take_color_state)
+    await message.answer(f"выберите колекцию количество которого хотите поменять")
+    # await state.clear()
+    
+    
+@router.message(StateFilter(Update_count_state.take_color_state))
+async def take_collection_for_change_count(message: types.Message, state: FSMContext):
+    await state.update_data(collection = message.text)
+    await state.set_state(Update_count_state.take_color_state)
+    await message.answer(f"выберите цвет количество которого хотите поменять")
+    # await state.clear()
+    
+    
+@router.message(StateFilter(Update_count_state.take_color_state))
+async def take_color_for_change_Count(message: types.Message, state: FSMContext):
+    await state.update_data(collection = message.text)
+    await state.set_state(Update_count_state.take_color_state)
+    await message.answer(f"выберите цвет количество которого хотите поменять")
+    # await state.clear()
+    
+
+
 #TODO сделать функцию для просмотра не полученых заказов
 
+@router.message(StateFilter(AdminState.admin), F.text == "посмотреть текущие заказы")
+async def check_orders(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
+    await state.clear()
+    await state.set_state(CheckOrderState.waiting_for_id)
+    orders = await select_not_delivered_orders()
+    res = [[i[0],i[4]] for i in orders]
+    # orders_arr = []
+    message_text = "\n".join([f"Заказ: {item[0]}. Статус: {item[4]}" for item in orders])    
+    # result = {item[0]: item[4] for item in orders}
+    state.update_data(waiting_for_id = orders)
+    await message.answer(f"{message_text}\n\nесли вам хотите увидеть всю информацию о заказе введите его номер")
+
+
+@router.message(StateFilter(CheckOrderState.waiting_for_id))
+async def Check_order(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
+    order_id = message.text
+    # data = await state.get_data()
+    orders = await select_not_delivered_orders()
+    # orders = orders[0]
+    # orders = data.get("waiting_for_id")
+    sized_data = await select_sized_data_from_db(order_id)
+    sized_data = sized_data[0]
+    
+    item_data = await select_item_data_from_db(sized_data[0])
+    item_data = item_data[0]
+    
+    await message.answer(
+        f"информация о заказе {order_id}\n\n"
+        # f"item_id: {orders}\n"
+        f"Коллекция: {item_data[0]}\n"
+        f"Цвет: {item_data[1]}\n"
+        f"Размер: {sized_data[1]}\n"
+        # f"sized_item_id: {sized_it_id}\n"
+        f"Адрес: {orders[int(order_id)-1][3]}\n"
+        f"user_id: {orders[int(order_id)-1][2]}\n"
+        f"status: {orders[int(order_id)-1][4]}\n"
+        f"track-num: {orders[int(order_id)-1][5]}\n"
+    )
+    
+    await state.clear()
+    await state.set_state(AdminState.admin)
+    
+    return
 
 @router.message(StateFilter(AdminState.admin), F.text == "действия с товарами")
 async def action_with_item(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     await state.clear()
     await state.set_state(AddItemState.action)
     await message.answer("вы хотите добавить или удалить товар?", reply_markup=add_action_kb.as_markup(resize_keyboard=True))
@@ -72,6 +211,10 @@ async def action_with_item(message: types.Message, state: FSMContext):
     
 @router.message(StateFilter(AddItemState.action))
 async def select_item_collection(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     action = message.text
     await state.update_data(action=action)
     await state.set_state(AddItemState.collection)
@@ -80,6 +223,10 @@ async def select_item_collection(message: types.Message, state: FSMContext):
     
 @router.message(StateFilter(AddItemState.collection))
 async def select_item_collection(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     action = message.text
     await state.update_data(collection=action)
     await state.set_state(AddItemState.color)
@@ -88,6 +235,10 @@ async def select_item_collection(message: types.Message, state: FSMContext):
 
 @router.message(StateFilter(AddItemState.color))
 async def select_item_collection(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     action = message.text
     await state.update_data(color=action)
     # await state.set_state(AddItemState.collection)
@@ -112,6 +263,10 @@ async def select_item_collection(message: types.Message, state: FSMContext):
 # Обработчик выбора "Редактировать заказ"
 @router.message(StateFilter(AdminState.admin), F.text == "редактировать заказ")
 async def edit_orders_panel(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     await state.set_state(AdminState.edit_order)
     await message.answer("Выберите действие для редактирования:", reply_markup=edit_order_kb.as_markup(resize_keyboard=True))
 
@@ -121,11 +276,16 @@ async def edit_orders_panel(message: types.Message, state: FSMContext):
 # Обработчик выбора действия с заказом
 @router.message(StateFilter(AdminState.edit_order))
 async def handle_edit_action(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     action = message.text
     if action in {"Редактировать пользовательские данные", "Добавить трек-номер", "Обновить статус"}:
         # Сохраняем выбранное действие
         # await state.update_data(action=action)
         await state.set_state(AdminState.waiting_for_order_id)
+        await state.update_data(action=action)
         await message.answer("Введите номер заказа, который хотите обработать:")
     elif action == "Вернуться в главное меню":
         await state.clear()
@@ -134,40 +294,18 @@ async def handle_edit_action(message: types.Message, state: FSMContext):
         await message.answer("Выберите действие из предложенных на клавиатуре.")
 
 
-# Обработчик ввода номера заказа
-# @router.message(StateFilter(AdminState.waiting_for_order_id))
-# async def process_order_id(message: types.Message, state: FSMContext):
-#     order_id = message.text
-#     if not order_id.isdigit():
-#         await message.answer("Пожалуйста, введите корректный номер заказа.")
-#         return
-
-#     # Сохраняем номер заказа
-#     await state.update_data(order_id=order_id)
-
-#     # Получаем выбранное действие из состояния
-#     data = await state.get_data()
-#     action = data.get("action")
-
-#     if action == "Добавить трек-номер":
-#         await message.answer(f"Добавление трек-номера для заказа {order_id}.")
-#         # Здесь логика добавления трек-номера
-#     elif action == "Обновить статус":
-#         await message.answer(f"Обновление статуса для заказа {order_id}.")
-#         # Здесь логика обновления статуса
-
-#     # Возврат в главное меню
-#     await state.set_state(AdminState.admin)
-#     await message.answer("Выберите следующее действие или вернитесь в главное меню.", reply_markup=admin_keyboard)
-
-#####################
 
 # Обработчик ввода номера заказа
 @router.message(StateFilter(AdminState.waiting_for_order_id))
 async def process_order_id(message: types.Message, state: FSMContext):
+    if message.text == "главное меню":
+        await state.clear()
+        await message.answer("Вы вернулись в главное меню.", reply_markup=main_keyboard)
+        return
     order_id = message.text
     if not order_id.isdigit():
         await message.answer("Пожалуйста, введите корректный номер заказа.")
+        await state.clear()
         return
 
     # Сохраняем номер заказа
@@ -176,6 +314,7 @@ async def process_order_id(message: types.Message, state: FSMContext):
     # Получаем выбранное действие из состояния
     data = await state.get_data()
     action = data.get("action")
+    # order_id = data.get("order_id")
 
     if action == "Добавить трек-номер":
         await state.set_state(AdminState.waiting_for_tracking_number)
@@ -183,11 +322,14 @@ async def process_order_id(message: types.Message, state: FSMContext):
     elif action == "Обновить статус":
         await state.set_state(AdminState.waiting_for_status_update)
         await message.answer("Введите новый статус для заказа:")
-
+    else:
+        await state.clear()
+        await message.answer("где-то произошла ошибка")
 
 # Обработчик ввода трек-номера
 @router.message(StateFilter(AdminState.waiting_for_tracking_number))
 async def process_tracking_number(message: types.Message, state: FSMContext):
+    
     tracking_number = message.text
 
     # Сохраняем трек-номер

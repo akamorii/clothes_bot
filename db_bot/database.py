@@ -131,7 +131,81 @@ async def select_ids_from_db (id, table, eq1, eq2, eq3 = 1, eq4 = 1) -> list:
         cursor = await con.execute(query)
         rows = await cursor.fetchall()
         return (rows)
+
+
+async def select_sized_data_from_db (id) -> list:
+    """
+    получить id двух элементов
     
+    :param table: Имя таблицы.
+    :param id: имя элемента который мы хотим получить.
+    """
+    query = f"SELECT item_id, size FROM sizes_and_counts  WHERE sized_item_id == {id}"
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return (rows)
+
+async def select_item_data_from_db (id) -> list:
+    """
+    получить id двух элементов
+    
+    :param table: Имя таблицы.
+    :param id: имя элемента который мы хотим получить.
+    """
+    query = f"SELECT collection, color FROM clothes WHERE id == {id}"
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return (rows)
+
+
+async def select_all_from_table (table) -> list:
+    """
+    получить id двух элементов
+    
+    :param table: Имя таблицы.
+    :param id: имя элемента который мы хотим получить.
+    """
+    query = f"SELECT * FROM {table}"
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return (rows)
+    
+    
+async def select_counts_from_db () -> list:
+    """
+    получить id двух элементов
+    
+    :param table: Имя таблицы.
+    :param id: имя элемента который мы хотим получить.
+    """
+    query = f"SELECT sized_item_id, item_id, count FROM sizes_and_counts"
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return (rows)
+
+
+async def select_not_delivered_orders () -> list:
+    """
+    получить id двух элементов
+    
+    :param table: Имя таблицы.
+    :param id: имя элемента который мы хотим получить.
+    """
+    query = f"SELECT * FROM orders  WHERE status != 'доставлено'"
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return list(rows)
+        
 
 async def main():
     await db_start()

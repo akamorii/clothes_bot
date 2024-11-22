@@ -2,22 +2,25 @@ from aiogram import types, Router
 from aiogram.filters import Command
 
 mkb = [
-        [types.KeyboardButton(text="корзина")],
         [types.KeyboardButton(text="каталог")],
-        [types.KeyboardButton(text="контакты")]
+        [types.KeyboardButton(text="наши соц-сети")],
+        [types.KeyboardButton(text="тех. поддержка")],
+        [types.KeyboardButton(text="мои заказы")],
 ]
 
 makb = [
-        [types.KeyboardButton(text="корзина")],
         [types.KeyboardButton(text="каталог")],
-        [types.KeyboardButton(text="контакты")],
+        [types.KeyboardButton(text="наши соц-сети")],
+        [types.KeyboardButton(text="тех. поддержка")],
+        [types.KeyboardButton(text="мои заказы")],
         [types.KeyboardButton(text="админ панель")]
 ]
 
 adkb = [
         [types.KeyboardButton(text="редактировать заказ")],
         [types.KeyboardButton(text="действия с товарами")],
-        [types.KeyboardButton(text="дпосмотреть текущие заказы")],
+        [types.KeyboardButton(text="посмотреть текущие заказы")],
+        [types.KeyboardButton(text="изменить количество товара")],
         [types.KeyboardButton(text="главное меню")]
 ]
 

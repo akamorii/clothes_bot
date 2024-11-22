@@ -17,38 +17,47 @@ from handlers.catalog_handler import router as catalog_router
 
 import os
 
+import sys
+
 from vars import TOKEN
 
+try:
+    bot = Bot(token=TOKEN)
+    dp = Dispatcher()
+    # router = Router()
+    # dp.include_router(router)
 
-bot = Bot(token=TOKEN)
-dp = Dispatcher()
-# router = Router()
-# dp.include_router(router)
+    # @router.message(F.text == "hello")
+    # async def handle_help(message: Message):
+    #     await message.answer("zxc")
+    # register_start_handler(dp)
+    # dp.include_router(dice_router)
+    dp.include_router(start_router)
+    dp.include_router(catalog_router)
+    dp.include_router(dice_router)
+    dp.include_router(admin_router)
 
-# @router.message(F.text == "hello")
-# async def handle_help(message: Message):
-#     await message.answer("zxc")
-# register_start_handler(dp)
-# dp.include_router(dice_router)
-dp.include_router(catalog_router)
-dp.include_router(start_router)
-dp.include_router(dice_router)
-dp.include_router(admin_router)
-
-dp.include_router(any_router)
-# dp.include_router(btns_router)
-# @router.message(Command(commands=['start']))
-# async def echo(message: types.Message):
-#     await message.answer(text='message')
+    dp.include_router(any_router)
+    # dp.include_router(btns_router)
+    # @router.message(Command(commands=['start']))
+    # async def echo(message: types.Message):
+    #     await message.answer(text='message')
 
 
+        
+        
+        
+    async def main ():
+        await dp.start_polling(bot, skip_updates=False)
+        
+        
+    if __name__ == '__main__':
+        logging.basicConfig(level=logging.INFO)
+        asyncio.run(main())
+        
+except Exception as e:
+    # print(e)
+    print(f"Ошибка: {type(e).__name__}, описание: {e}")
+    os.system("python3 ./bot.py")
+    sys.exit()
     
-    
-    
-async def main ():
-    await dp.start_polling(bot, skip_updates=False)
-    
-    
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    asyncio.run(main())
