@@ -12,6 +12,9 @@ from handlers.dice_handler import router as dice_router
 from handlers.admin_handler import router as admin_router
 from handlers.any_handler import router as any_router
 from handlers.catalog_handler import router as catalog_router
+from handlers.my_orders_handler import router as my_orders_router
+
+from bot_instance import bot
 # from handlers.dice_handler import router as dice_router
 # from handlers.buttons_handlers import router as btns_router
 
@@ -22,7 +25,7 @@ import sys
 from vars import TOKEN
 
 try:
-    bot = Bot(token=TOKEN)
+    # bot = Bot(token=TOKEN)
     dp = Dispatcher()
     # router = Router()
     # dp.include_router(router)
@@ -33,6 +36,7 @@ try:
     # register_start_handler(dp)
     # dp.include_router(dice_router)
     dp.include_router(start_router)
+    dp.include_router(my_orders_router)
     dp.include_router(catalog_router)
     dp.include_router(dice_router)
     dp.include_router(admin_router)

@@ -47,6 +47,7 @@ class Update_count_state(StatesGroup):
     take_color_state = State()
     take_size_state = State()
     input_count = State()
+    data_count = State()
     
 
 add_action_kb = ReplyKeyboardBuilder()
@@ -84,6 +85,8 @@ async def admin_panel_show(message: types.Message, state: FSMContext):
         await message.answer("Вы в админ панели. Выберите действие:", reply_markup=admin_keyboard)
 
 
+    
+
 @router.message(StateFilter(AdminState.admin), F.text == "изменить количество товара")
 async def check_count(message: types.Message, state: FSMContext):
     if message.text == "главное меню":
@@ -118,15 +121,62 @@ async def show_count(message: types.Message, state: FSMContext):
     response_message = "\n".join(response)
     
     await message.answer(f"{response_message}", reply_markup=edit_count_kb.as_markup())
+    
 
-@router.message(StateFilter(Update_count_state.action_uptade_count), F.text == "добавить количество")
-async def take_action_for_change_count_increase(message: types.Message, state: FSMContext):
-    await state.update_data(action = добавить)
-    await state.set_state(Update_count_state.take_color_state)
-    await message.answer(f"выберите колекцию количество которого хотите поменять")
-    # await state.clear()
+@router.message(StateFilter(Update_count_state.action_uptade_count), F.text == "добавить количество" and F.text == "уменьшить количество")
+async def add_count(message: types.Message, state: FSMContext):
+    await message.answer(f"введите одежду в формате коллекция-цвет-размер-количество которое хотите добавить или уменьшить")
+    await state.set_state(Update_count_state.data_count)
+    action = message.text
+    
+    if action == "добавить количество":
+        action = '+'
+    elif action == "уменьшить количество":
+        action = '-'
+    else: 
+        await state.clear()
+        return
+    
+    await state.update_data(action = action)
+    
+@router.message(StateFilter(Update_count_state.data_count))
+async def add_count_to(message: types.Message, state: FSMContext):
+    
+    try:
+        data = (message.text).split('-')
+        item_id = await select_ids_from_db('id', 'clothes', 'color', data[1], 'collection', data[0])
+        sized_item_id =  await select_ids_from_db('sized_item_id', 'sizes_and_counts', 'size', data[2], 'item_id', item_id[0][0])
+        
+        data_state = await state.get_data()
+        action = data_state.get('action')
+        await count_update_db(action, data[3], sized_item_id[0][0])
+            
+    except Exception as e:
+        print(e)
+        await message.answer("попробуйте еще раз")
+        await state.clear()
+        await state.set_state(AdminState.admin)
+        return
+        # [collection, color, size, count]
+
+
+    
+    # await state.set_state(Update_count_state.data_count)
+
+
+# @router.message(StateFilter(Update_count_state.action_uptade_count), F.text == "добавить количество")
+# async def take_action_for_change_count_increase(message: types.Message, state: FSMContext):
+#     await state.update_data(action = добавить)
+#     await state.set_state(Update_count_state.take_color_state)
+#     await message.answer(f"выберите колекцию количество которого хотите поменять")
+#     # await state.clear()
     
     
+# @router.message(StateFilter(AdminState.admin), F.text == '')
+# async def admin_state_handler(message: types.Message, state: FSMContext):
+#     await message.answer("Вы вернулись в главное меню.", reply_markup=admin_keyboard)
+
+
 @router.message(StateFilter(Update_count_state.take_color_state))
 async def take_collection_for_change_count(message: types.Message, state: FSMContext):
     await state.update_data(collection = message.text)
@@ -368,3 +418,5 @@ async def process_status_update(message: types.Message, state: FSMContext):
     # Возврат в главное меню
     await state.set_state(AdminState.admin)
     await message.answer("Выберите следующее действие или вернитесь в главное меню.", reply_markup=admin_keyboard)
+ 
+    

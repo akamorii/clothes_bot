@@ -8,14 +8,15 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import StateFilter
 from handlers.payment import make_payment, get_payment_status
+from bot_instance import bot
 
-from vars import ADMIN_ID
+from vars import ADMIN_ID, CHAT_ID
 
 import time
 
 import asyncio
 
-from db_bot.database import db_show, select_row_from_db, select_ids_from_db, add_order_to_db, count_update_db
+from db_bot.database import db_show, select_row_from_db, select_ids_from_db, add_order_to_db, count_update_db, select_ids_from_db2
 
 # from yookassa import Payment
 
@@ -74,7 +75,7 @@ async def make_order(message: types.Message, state: FSMContext):
         catalog_kb2.add(KeyboardButton(text=el))
     catalog_kb2.row(types.KeyboardButton(text="главное меню"))
     
-    await message.answer('введите цвет', reply_markup=catalog_kb2.as_markup(resize_keyboard=True))
+    await message.answer('выберите цвет', reply_markup=catalog_kb2.as_markup(resize_keyboard=True))
 
 
 @router.message(Make_order.color)
@@ -85,7 +86,7 @@ async def make_order_two(message: types.Message, state: FSMContext):
         return
     await state.update_data(color = message.text)
     await state.set_state(Make_order.size)
-    tuple_list = await db_show(['size'], 'sizes_and_counts', eq1='count')
+    tuple_list = await db_show(['size'], 'sizes_and_counts', eq1=1)
     # Извлекаем уникальные элементы из результата
     unique_elements = list({item[0] for item in tuple_list})
     unique_elements = sorted(unique_elements)
@@ -95,7 +96,7 @@ async def make_order_two(message: types.Message, state: FSMContext):
         catalog_kb.add(KeyboardButton(text=str(el)))
     catalog_kb.row(types.KeyboardButton(text="главное меню"))
         
-    await message.answer('размер', reply_markup=catalog_kb.as_markup(resize_keyboard=True))
+    await message.answer('выберите размер', reply_markup=catalog_kb.as_markup(resize_keyboard=True))
     
 
 @router.message(Make_order.size)
@@ -176,12 +177,18 @@ async def confirm_order_callback(callback: types.CallbackQuery, state: FSMContex
     
     await add_order_to_db(sized_it_id[0][0], user_id, addr)
     
-    await count_update_db('-', 1, 1)
+    # TODO
+    await count_update_db('-', 1, sized_it_id[0][0])
     
     order_id = await select_row_from_db('orders', 'user_id', user_id)
     # print(order_id)
     await callback.message.answer(f"ваш номер заказа {order_id[-1][0]}")
     
+    await bot.send_message(chat_id=CHAT_ID[0], text=f"сделали заказ\n\nКоллекция: {collection}\nЦвет: {color}\nРазмер: {size}\nАдрес: {addr}\nномер заказа: {order_id[-1][0]}")
+    count_buyed = await select_ids_from_db2('count', 'sizes_and_counts', 'sized_item_id',sized_it_id[0][0])
+    if count_buyed[0][0] <= 0:
+        await bot.send_message(chat_id=CHAT_ID[0],text=f"товар заканчивается {count_buyed[0][0]}")
+        # await callback.message.answer(f"товар заканчивается {count_buyed[0][0]}")
     # Завершаем состояние
     await state.clear()
     # await callback.answer()  # Закрываем всплывающее уведомление Telegram

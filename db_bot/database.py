@@ -116,9 +116,21 @@ async def select_row_from_db (table, eq1, eq2, eq3 = 1, eq4 = 1) -> list:
         rows = await cursor.fetchall()
         return (rows)
 
+async def select_orderid_by_userid (user_id) -> list:
+    """
+    получить строчку из базы данных
+    
+    :param table: Имя таблицы.
+    """
+    query = f"SELECT order_id FROM orders WHERE user_id == {user_id}"
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return (rows)
 
 
-async def select_ids_from_db (id, table, eq1, eq2, eq3 = 1, eq4 = 1) -> list:
+async def select_ids_from_db (id, table, eq1, eq2, eq3 = '1', eq4 = 1) -> list:
     """
     получить id двух элементов
     
@@ -126,6 +138,21 @@ async def select_ids_from_db (id, table, eq1, eq2, eq3 = 1, eq4 = 1) -> list:
     :param id: имя элемента который мы хотим получить.
     """
     query = f"SELECT {id} FROM {table}  WHERE {eq1} == '{eq2}' AND {eq3} == '{eq4}'"
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return (rows)
+
+
+async def select_ids_from_db2 (id, table, eq1, eq2, eq3 = 1, eq4 = 1) -> list:
+    """
+    получить id двух элементов
+    
+    :param table: Имя таблицы.
+    :param id: имя элемента который мы хотим получить.
+    """
+    query = f"SELECT {id} FROM {table}  WHERE {eq1} == {eq2} AND {eq3} == {eq4}"
 
     async with aiosqlite.connect(DB_PATH) as con:
         cursor = await con.execute(query)
@@ -206,16 +233,33 @@ async def select_not_delivered_orders () -> list:
         rows = await cursor.fetchall()
         return list(rows)
         
+async def select_by_one_select (user_id, row, table = 'orders') -> list:
+    """
+    получить id двух элементов
+    
+    :param table: Имя таблицы.
+    :param id: имя элемента который мы хотим получить.
+    """
+    try:
+        query = f"SELECT * FROM {table}  WHERE {row} == '{user_id}'"
+    except Exception as e:
+        return e
+
+    async with aiosqlite.connect(DB_PATH) as con:
+        cursor = await con.execute(query)
+        rows = await cursor.fetchall()
+        return list(rows)
 
 async def main():
     await db_start()
+    rows = await select_orderid_by_userid(1135754644)
     # await add_clothes_db('clothes', 'classic', 't_shirt', 'red')
     # rows = await db_show(['collection', 'item'], 'clothes')
     # rows = await select_row_from_db('sizes_and_counts', 'size', '52', 'item_id', '1')
     # rows = await select_ids_from_db('id', 'clothes', 'color', 'white', 'collection', 'classic')
     # rows = await select_row_from_db('orders', 'user_id', 1135754644)
     await order_update_db()
-    # print(rows)  # выводим результат работы db_show
+    print(rows)  # выводим результат работы db_show
     # await count_update_db('-', 1, 1)
     # await db_drop()  # Раскомментируйте, если хотите удалить таблицу
 
