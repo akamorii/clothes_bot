@@ -6,6 +6,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import StateFilter
 
+
 # from aiogram import Bot
 # from bot import bot
 from bot_instance import bot
@@ -27,6 +28,8 @@ async def send_welcome(message: types.Message):
     print(message.chat.id)
     if message.from_user.id in ADMIN_ID:
         await message.answer(f"вы вошли как админ!", reply_markup=main_admin_keyboard )
+        # pic = types.FSInputFile("./pictures/black.jpg")
+        # await message.answer_photo(pic, caption="Это локальное изображение!")
         # await bot.send_message(text=f"привет для чата", chat_id=CHAT_ID[0])
         
 @router.message(StateFilter(None), F.text == "главное меню")

@@ -13,6 +13,8 @@ from handlers.admin_handler import router as admin_router
 from handlers.any_handler import router as any_router
 from handlers.catalog_handler import router as catalog_router
 from handlers.my_orders_handler import router as my_orders_router
+from handlers.tech_support_handler import router as tech_supp_router
+from handlers.soqial_network_handler import router as social_network_router
 
 from bot_instance import bot
 # from handlers.dice_handler import router as dice_router
@@ -36,6 +38,8 @@ try:
     # register_start_handler(dp)
     # dp.include_router(dice_router)
     dp.include_router(start_router)
+    dp.include_router(social_network_router)
+    dp.include_router(tech_supp_router)
     dp.include_router(my_orders_router)
     dp.include_router(catalog_router)
     dp.include_router(dice_router)

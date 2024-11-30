@@ -24,6 +24,11 @@ class MyОrderState(StatesGroup):
     select_one_order = State()
     
   
-@router.message(F.text == "тех. поддержка")
+@router.message(F.text == "наши соц-сети")
 async def check_my_orders(message: types.Message, state: FSMContext):
-    await message.answer("Если у Вас есть какие-то вопросы: пишите - (по заказу) https://t.me/Business228777\nпо работе бота: https://t.me/Akamorii")
+    text = (
+        "Привет! Вот ссылки на наши соцсети:\n\n"
+        "[Telegram](https://t.me/raven_KMV) — Подписывайся на наш канал\n"
+        "[VK](vk.com/club228341079) - мы в ВК\n"
+        "[Instagram](https://www.instagram.com/raven_kmv/profilecard/?igsh=eHRlajk1aDFuMjl3) — Следи за новостями")
+    await message.answer(text, parse_mode="Markdown")
