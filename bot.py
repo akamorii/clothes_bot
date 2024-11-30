@@ -51,7 +51,7 @@ try:
 
 
         
-# da pizdec
+
         
     async def main ():
         await dp.start_polling(bot, skip_updates=False)
