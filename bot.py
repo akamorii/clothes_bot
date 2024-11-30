@@ -66,4 +66,4 @@ except Exception as e:
     print(f"Ошибка: {type(e).__name__}, описание: {e}")
     os.system("python3 ./bot.py")
     sys.exit()
-    
+    # 
