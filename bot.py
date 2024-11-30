@@ -51,7 +51,7 @@ try:
 
 
         
-        
+# da pizdec
         
     async def main ():
         await dp.start_polling(bot, skip_updates=False)
@@ -60,7 +60,7 @@ try:
     if __name__ == '__main__':
         logging.basicConfig(level=logging.INFO)
         asyncio.run(main())
-# ffff
+# dfwrfrr23
 except Exception as e:
     # print(e)
     print(f"Ошибка: {type(e).__name__}, описание: {e}")
