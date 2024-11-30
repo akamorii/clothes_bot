@@ -8,7 +8,6 @@ from aiogram import F
 from aiogram.types import Message
 
 from handlers.start_handler import router as start_router
-from handlers.dice_handler import router as dice_router
 from handlers.admin_handler import router as admin_router
 from handlers.any_handler import router as any_router
 from handlers.catalog_handler import router as catalog_router
@@ -42,7 +41,6 @@ try:
     dp.include_router(tech_supp_router)
     dp.include_router(my_orders_router)
     dp.include_router(catalog_router)
-    dp.include_router(dice_router)
     dp.include_router(admin_router)
 
     dp.include_router(any_router)
