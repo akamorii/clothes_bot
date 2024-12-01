@@ -30,5 +30,6 @@ async def check_my_orders(message: types.Message, state: FSMContext):
         "Привет! Вот ссылки на наши соцсети:\n\n"
         "[Telegram](https://t.me/raven_KMV) — Подписывайся на наш канал\n"
         "[VK](vk.com/club228341079) - мы в ВК\n"
-        "[Instagram](https://www.instagram.com/raven_kmv/profilecard/?igsh=eHRlajk1aDFuMjl3) — Следи за новостями")
+        "[Instagram](https://www.instagram.com/raven_kmv/profilecard/?igsh=eHRlajk1aDFuMjl3) — Следи за новостями\n"
+        "[YouTube](https://www.youtube.com/channel/UCcZ-FPPJ_DjK27jzfizMKFA) - наш канал на ютубе")
     await message.answer(text, parse_mode="Markdown")
