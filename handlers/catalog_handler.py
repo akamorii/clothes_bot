@@ -132,7 +132,7 @@ async def make_order_four(message: types.Message, state: FSMContext):
     elif color == black:
         pic = types.FSInputFile("./pictures/black.jpg")
     await message.answer_photo(pic)
-    await message.answer(f"вы сделали заказ...", reply_markup=types.InlineKeyboardMarkup(inline_keyboard=confirm_order_inline_kb))
+    await message.answer(f"вы сделали заказ\nК оплате 1 500₽", reply_markup=types.InlineKeyboardMarkup(inline_keyboard=confirm_order_inline_kb))
     # await state.clear()
     
     
