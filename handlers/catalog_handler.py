@@ -121,6 +121,12 @@ async def make_order_four(message: types.Message, state: FSMContext):
     await state.update_data(addr = [message.text, message.from_user.id])
     
     data = await state.get_data()
+    # data = await state.get_data()
+    collection = data.get('collection')
+    # color = data.get('color')
+    size = data.get('size')
+    addr = data.get('addr')[0]
+    user_id = data.get('addr')[1] 
     
     await state.set_state(Make_order.confirm_order)
     # data = await state.get_data()
@@ -129,10 +135,12 @@ async def make_order_four(message: types.Message, state: FSMContext):
     pic = ''
     if color == 'white':
         pic = types.FSInputFile("./pictures/white.jpg")
-    elif color == black:
+    elif color == 'black':
         pic = types.FSInputFile("./pictures/black.jpg")
+        
+    
     await message.answer_photo(pic)
-    await message.answer(f"вы сделали заказ\nК оплате 1 500₽", reply_markup=types.InlineKeyboardMarkup(inline_keyboard=confirm_order_inline_kb))
+    await message.answer(f"ваш заказ\nКоллекция: {collection}\nЦвет: {color}\nРазмер: {size}\nАдрес: {addr}\nК оплате 1 500₽", reply_markup=types.InlineKeyboardMarkup(inline_keyboard=confirm_order_inline_kb))
     # await state.clear()
     
     
