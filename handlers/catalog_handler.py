@@ -157,7 +157,7 @@ async def confirm_order_callback(callback: types.CallbackQuery, state: FSMContex
         [types.InlineKeyboardButton(text='оплатить', url=payment_url)]
     ]
     
-    await callback.message.answer('вот ваша ссылка для оплаты',reply_markup=types.InlineKeyboardMarkup(inline_keyboard=inline_button_for_pay))
+    await callback.message.answer('К оплате 1 500₽\nвот ваша ссылка для оплаты',reply_markup=types.InlineKeyboardMarkup(inline_keyboard=inline_button_for_pay))
 
     while True:
         payment_status = await get_payment_status(payment_id)  # Асинхронная операция
@@ -178,6 +178,7 @@ async def confirm_order_callback(callback: types.CallbackQuery, state: FSMContex
         f"Размер: {size}\n"
         # f"sized_item_id: {sized_it_id}\n"
         f"Адрес: {addr}\n"
+        f"цена: 1 500₽" 
         # f"user_id: {user_id}"
     )
     
