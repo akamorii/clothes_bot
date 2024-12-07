@@ -123,7 +123,7 @@ async def show_count(message: types.Message, state: FSMContext):
     await message.answer(f"{response_message}", reply_markup=edit_count_kb.as_markup())
     
 
-@router.message(StateFilter(Update_count_state.action_uptade_count), F.text == "добавить количество" and F.text == "уменьшить количество")
+@router.message(StateFilter(Update_count_state.action_uptade_count), F.text == "добавить количество" or F.text == "уменьшить количество")
 async def add_count(message: types.Message, state: FSMContext):
     await message.answer(f"введите одежду в формате коллекция-цвет-размер-количество которое хотите добавить или уменьшить")
     await state.set_state(Update_count_state.data_count)
