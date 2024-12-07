@@ -140,7 +140,7 @@ async def make_order_four(message: types.Message, state: FSMContext):
         
     
     await message.answer_photo(pic)
-    await message.answer(f"ваш заказ\nКоллекция: {collection}\nЦвет: {color}\nРазмер: {size}\nАдрес: {addr}\nК оплате 1 500₽", reply_markup=types.InlineKeyboardMarkup(inline_keyboard=confirm_order_inline_kb))
+    await message.answer(f"ваш заказ\nКоллекция: {collection}\nЦвет: {color}\nРазмер: {size}\nАдрес: {addr}\nК оплате 2 000₽", reply_markup=types.InlineKeyboardMarkup(inline_keyboard=confirm_order_inline_kb))
     # await state.clear()
     
     
@@ -165,7 +165,7 @@ async def confirm_order_callback(callback: types.CallbackQuery, state: FSMContex
         [types.InlineKeyboardButton(text='оплатить', url=payment_url)]
     ]
     
-    await callback.message.answer('К оплате 1 500₽\nвот ваша ссылка для оплаты',reply_markup=types.InlineKeyboardMarkup(inline_keyboard=inline_button_for_pay))
+    await callback.message.answer('К оплате 2 000₽\nвот ваша ссылка для оплаты',reply_markup=types.InlineKeyboardMarkup(inline_keyboard=inline_button_for_pay))
 
     while True:
         payment_status = await get_payment_status(payment_id)  # Асинхронная операция
@@ -186,7 +186,7 @@ async def confirm_order_callback(callback: types.CallbackQuery, state: FSMContex
         f"Размер: {size}\n"
         # f"sized_item_id: {sized_it_id}\n"
         f"Адрес: {addr}\n"
-        f"цена: 1 500₽" 
+        f"цена: 2 000₽" 
         # f"user_id: {user_id}"
     )
     
