@@ -7,7 +7,7 @@ import asyncio
 Configuration.account_id = ACCOUNT_ID
 Configuration.secret_key = PAYMENT_TOKEN
 
-async def make_payment (amount:float, desctiption = 'test'):
+async def make_payment (amount:float, desctiption = 'покупка одежды'):
     payment = Payment.create({
     "amount": {
         "value": amount,
@@ -18,7 +18,24 @@ async def make_payment (amount:float, desctiption = 'test'):
         "return_url": "https://www.example.com/return_url"
     },
     "capture": True,
-    "description": desctiption
+    "description": desctiption,
+    "receipt": {
+            "customer": {
+                "email": "user@example.com",  # Почта покупателя
+                # "phone": phone  # Телефон покупателя
+            },
+            "items": [
+                {
+                    "description": "футболка",  # Название товара
+                    "quantity": "1.00",  # Количество
+                    "amount": {
+                        "value": str(amount),  # Цена
+                        "currency": "RUB"
+                    },
+                    "vat_code": 1  # Ставка НДС (обычно 1)
+                }
+            ]
+        }
 }, uuid.uuid4())
     return dict(payment)
 

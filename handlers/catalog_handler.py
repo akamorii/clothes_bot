@@ -154,7 +154,7 @@ async def confirm_order_callback(callback: types.CallbackQuery, state: FSMContex
     addr = data.get('addr')[0]
     user_id = data.get('addr')[1] 
     
-    payment_data = await (make_payment(100.0))
+    payment_data = await (make_payment(2000.0))
     
     payment_url = payment_data['confirmation']['confirmation_url']
     payment_id = payment_data['id']
